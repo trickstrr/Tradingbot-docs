@@ -1,151 +1,166 @@
-# Documentation: Configuration Parameters for the Crypto Trading Bot Strategy
+# Comprehensive Feature List of the Crypto Trading Bot
 
-## Table of Contents
-1. [General Settings](#general-settings)
-2. [Signal Weights](#signal-weights)
-3. [Position Size Parameters](#position-size-parameters)
-4. [Signal Thresholds](#signal-thresholds)
-5. [RSI Parameters](#rsi-parameters)
-6. [Momentum Parameters](#momentum-parameters)
-7. [Volume Parameters](#volume-parameters)
-8. [Moving Average Parameters](#moving-average-parameters)
-9. [Indicator Weights](#indicator-weights)
-10. [Confidence Level Parameters](#confidence-level-parameters)
-11. [Volatility Parameters](#volatility-parameters)
-12. [Trend Parameters](#trend-parameters)
-13. [Cooling Period Parameters](#cooling-period-parameters)
-14. [Position Management Parameters](#position-management-parameters)
-15. [Trailing Stop Parameters](#trailing-stop-parameters)
-16. [Profit-Taking Parameters](#profit-taking-parameters)
-17. [Profit Protection Parameters](#profit-protection-parameters)
-18. [Divergence Parameters](#divergence-parameters)
-19. [Market Timing Parameters](#market-timing-parameters)
-20. [Time Filter Parameters](#time-filter-parameters)
-21. [Loss Limitation Parameters](#loss-limitation-parameters)
+## 1. Core Functions
 
----
+### 1.1 Automated Trading
+- **Fully automated operation**: The bot can independently perform market analyses and make trading decisions 24/7.
+- **Configurable intervals**: Update intervals for market analyses are adjustable (default: every 20 minutes).
+- **Parameter control**: All trading parameters can be customized via configuration files.
 
-## General Settings
+### 1.2 Multi-Exchange Support
+- **Supported exchanges**:
+  - Binance (via CCXT library)
+  - Coinbase (via custom Advanced Trade API integration)
+- **Automatic fallback mechanisms**: In case of connection issues with an exchange.
 
-### UPDATE_INTERVAL
-**Description:** Time interval in seconds at which the strategy reanalyzes the market and generates trading signals.  
-**Values:** Specified in seconds (e.g., 3600 = 1 hour, 1800 = 30 minutes)  
-**Impact:** Smaller values allow faster reactions to market movements but consume more resources and may result in more noise. Higher values reduce noise and API calls but may miss critical trading opportunities.  
-**Optimal Use:** Should align with the selected timeframe. For a 1-hour chart, an interval of 30-60 minutes is recommended.
+### 1.3 Market Analysis
+- **Technical indicators**: Comprehensive integration of over 30 different technical indicators.
+- **Sentiment analysis**: Consideration of crypto market sentiment from news and social media.
+- **Hybrid signals**: Combination of TradingView signals with custom technical analyses.
+- **Price prediction**: LSTM-based price predictions for short-term price movements.
+- **Reinforcement learning**: Adaptive strategies through RL agents that learn from historical data.
+- **Market phase recognition**: Identification of accumulation, distribution, expansion, and contraction phases.
+- **Trend analysis**: Multi-timeframe trend analyses with dynamic trend strength calculation.
 
-### LOOKBACK_WINDOW
-**Description:** Number of historical data points used for analysis.  
-**Values:** Integer (e.g., 300 candles)  
-**Impact:** Determines how far back the strategy looks to identify patterns and calculate indicators.  
-**Optimal Use:** Should be large enough to detect long-term trends but not so large that outdated data skews the analysis.
+## 2. Signal Generation and Decision Making
 
-### PREDICTION_HORIZON
-**Description:** Number of future time units for which a forecast is made.  
-**Values:** Integer (e.g., 12 periods)  
-**Impact:** Influences how far into the future the strategy attempts to predict.  
-**Optimal Use:** Shorter horizons are generally more accurate, but longer ones can be helpful for strategic decisions.
+### 2.1 Hybrid Signal System
+- **Weighted signal combination**: Different signal sources are combined based on configurable weightings:
+  - Hybrid/TradingView signals (30%)
+  - Technical indicators (60%)
+  - Sentiment analysis (10%)
+  - Optional: FinRL, LSTM, and RL with individually configurable proportions.
+- **Divergence analysis**: Identification of bullish and bearish divergences.
+- **Oscillator-based signals**: RSI, MACD, stochastic indicators for overbought/oversold detection.
 
-## Signal Weights
+### 2.2 Advanced Decision Logic
+- **Confidence-based decisions**: Signal strength and confidence levels must exceed thresholds.
+- **Market phase-adaptive strategy**:
+  - Adjustment of trading strategies based on detected market phases.
+  - Special boosts (e.g., ACCUMULATION_PHASE_BOOST) for each phase.
+- **Trend filtering**: Optionally trade only with the trend (TRADE_WITH_TREND_ONLY).
+- **Dynamic position sizing**: Adjustment of position sizes based on market volatility and phase.
 
-### SIGNAL_WEIGHTS
-**Description:** Weights assigned to various signal sources contributing to the overall signal.  
-**Components:**
-- **hybrid_weight:** Weight of the hybrid signal combining various technical indicators.
-- **technical_weight:** Weight of pure technical analysis.
-- **finrl_weight:** Weight of the FinRL model (Reinforcement Learning).
-- **sentiment_weight:** Weight of sentiment analysis.
-- **lstm_weight:** Weight of the LSTM model for price forecasting.
-- **rl_weight:** Weight of the general Reinforcement Learning model.
+## 3. Risk Management
 
-**Impact:** Determines how strongly each signal source influences the final trading signal.  
-**Optimal Use:** Higher weights should be assigned to more reliable signal sources. In volatile markets, the hybrid_weight should be increased.
+### 3.1 Position Management
+- **Configurable stop-loss**: Automatic sell-off at a defined loss percentage.
+- **Take-profit**: Automatic profit-taking at a predefined profit percentage.
+- **Trailing stop-loss**: Dynamic adjustment of stop-loss levels as profits increase.
+- **Profit protection**: Protection against profit declines after reaching profit thresholds.
+- **Early trailing activation**: Early activation of trailing stops upon reaching certain profit levels.
 
-## Position Size Parameters
+### 3.2 Volatility Adjustments
+- **Volatility detection**: Calculation and monitoring of market volatility.
+- **Position size adjustment**: Reduction of position sizes in volatile markets.
+- **Volatility-based exits**: Early exits in case of extreme volatility and secured profits.
 
-### MAX_POSITION_SIZE
-**Description:** Maximum proportion of available capital that can be used for a position.  
-**Values:** Decimal between 0 and 1 (e.g., 0.7 = 70% of capital)  
-**Impact:** Limits risk by capping position size.  
-**Optimal Use:** More conservative values (0.5-0.7) for risk-averse strategies, higher values for more aggressive strategies.
+### 3.3 Time-Based Exit Strategies
+- **Maximum holding time**: Automatic exit from unprofitable positions after a set period.
+- **Quick profit-taking**: Aggressive profit-taking on rapid price surges (QUICK_PROFIT_6H, QUICK_PROFIT_12H).
+- **Dynamic trailing parameter adjustment**: Adjustment of trailing stop distance based on holding duration.
 
-### BUY_POSITION_SIZE
-**Description:** Proportion of available capital to be used for buy positions.  
-**Values:** Decimal between 0 and 1  
-**Impact:** Determines how much capital is allocated for buy signals.  
-**Optimal Use:** Should be adjusted to market conditions - higher in bull markets, lower in uncertain markets.
+## 4. Signal Filtering and Optimization
 
-### SELL_POSITION_SIZE
-**Description:** Proportion of an existing position to be liquidated on sell signals.  
-**Values:** Decimal between 0 and 1 (1.0 = sell 100%)  
-**Impact:** Determines whether positions are fully or partially closed.  
-**Optimal Use:** Typically 1.0 to fully close positions, but can be reduced for partial profit-taking.
+### 4.1 Adaptive Confidence Rating
+- **Signal agreement**: Higher confidence when signals from different sources align.
+- **Signal strength weighting**: Stronger signals receive higher weighting.
+- **Neutrality factor**: Reduced confidence in the neutral RSI range.
 
-## Signal Thresholds
+### 4.2 Timing Optimization
+- **Extreme point detection**: Identification of local highs and lows for optimal entry timing.
+- **Time-of-day preferences**: Configurable trading hours with higher activity.
+- **Weekday adjustment**: Modification of signal strengths based on historical daily performance.
 
-### BUY_THRESHOLD
-**Description:** Minimum signal value required to generate a buy signal.  
-**Values:** Decimal between 0 and 1 (higher values = more selective signals)  
-**Impact:** Determines how strong a signal must be to trigger a buy.  
-**Optimal Use:** Higher values (0.4-0.6) for more selective and higher-quality buy signals.
+### 4.3 Chart Pattern Recognition
+- **Pattern detection**: Identification of candlestick patterns (PATTERN_RECOGNITION_ENABLED).
+- **Support and resistance levels**: Detection and inclusion of key price levels.
+- **Historical levels**: Consideration of significant historical price levels.
 
-### STRONG_BUY_THRESHOLD
-**Description:** Signal value at which a strong buy signal is generated.  
-**Values:** Decimal between 0 and 1 (higher than BUY_THRESHOLD)  
-**Impact:** Can be used to adjust position size for particularly strong signals.  
-**Optimal Use:** Should be significantly higher than BUY_THRESHOLD (e.g., 0.7-0.85).
+## 5. Adaptive Learning
 
-### SELL_THRESHOLD
-**Description:** Maximum signal value below which a sell signal is generated.  
-**Values:** Decimal between -1 and 0 (lower values = more selective signals)  
-**Impact:** Determines how strong a negative signal must be to trigger a sell.  
-**Optimal Use:** Lower values (-0.4 to -0.6) for more selective and higher-quality sell signals.
+### 5.1 Reinforcement Learning
+- **Online learning**: Incremental training of RL agents during operation.
+- **Experience-based adjustment**: Strategy improvement based on trading results.
+- **Performance tracking**: Logging and analysis of decisions for continuous improvement.
 
-### STRONG_SELL_THRESHOLD
-**Description:** Signal value below which a strong sell signal is generated.  
-**Values:** Decimal between -1 and 0 (lower than SELL_THRESHOLD)  
-**Impact:** Can be used to adjust position size for particularly strong sell signals.  
-**Optimal Use:** Should be significantly lower than SELL_THRESHOLD (e.g., -0.7 to -0.85).
+### 5.2 Financial Market RL (FinRL)
+- **Finance-specific RL**: Reinforcement learning agent trained on financial data.
+- **Multi-asset optimization**: Can be optimized across various assets.
+- **Adaptive weighting system**: Adjusts indicator weightings based on success rates.
 
-### CONFIDENCE_THRESHOLD
-**Description:** Minimum confidence level required for a signal to trigger a trade.  
-**Values:** Decimal between 0 and 1  
-**Impact:** A higher value means only signals with high confidence result in trades.  
-**Optimal Use:** Higher values (0.4-0.65) for a more conservative strategy with fewer but higher-quality trades.
+### 5.3 LSTM Price Forecasting
+- **Sequential price prediction**: Forecasting future prices based on historical patterns.
+- **Multi-feature input**: Consideration of various technical indicators as input.
+- **Confidence-based utilization**: Use of predictions only when the model confidence is sufficient.
 
-## RSI Parameters
+## 6. Monitoring and Notifications
 
-### RSI_OVERSOLD_THRESHOLD
-**Description:** RSI value below which an asset is considered strongly oversold.  
-**Values:** Integer between 0 and 30 (typically 20-30)  
-**Impact:** Lower values result in rarer but stronger buy signals.  
-**Optimal Use:** Lower values (18-20) are effective in bear markets, while higher values (25-30) work well in bull markets.
+### 6.1 Discord Integration
+- **Full-featured Discord bot**: Comprehensive command interface for controlling the bot.
+- **Webhook support**: Alternative notifications via Discord webhooks.
+- **Extensive notifications**:
+  - Regular market updates.
+  - Trade notifications.
+  - Wallet overviews.
+  - Custom alerts.
 
-### RSI_MODERATE_OVERSOLD
-**Description:** RSI value below which an asset is moderately oversold.  
-**Values:** Integer between RSI_OVERSOLD_THRESHOLD and 50 (typically 30-40)  
-**Impact:** Generates weaker buy signals compared to strong oversold conditions.  
-**Optimal Use:** Can be used for earlier entries with smaller position sizes.
+### 6.2 Logging System
+- **Multi-level logging**: Different detail levels (INFO, DEBUG, ERROR).
+- **Rotating logs**: Automatic rotation of large log files.
+- **Dedicated trade logs**: Separate recording of all trade transactions.
+- **Color-coded console logging**: Improved readability through color-coded output.
 
-### RSI_OVERBOUGHT_THRESHOLD
-**Description:** RSI value above which an asset is considered strongly overbought.  
-**Values:** Integer between 70 and 100 (typically 70-80)  
-**Impact:** Higher values result in rarer but stronger sell signals.  
-**Optimal Use:** Higher values (75-80) are effective in bull markets, while lower values (70-75) work well in bear markets.
+### 6.3 Portfolio Monitoring
+- **Real-time portfolio evaluation**: Continuous assessment of the overall portfolio.
+- **Profit/loss tracking**: Calculation and display of realized and unrealized profits.
+- **Position overview**: Detailed breakdown of all open positions.
 
-### RSI_MODERATE_OVERBOUGHT
-**Description:** RSI value above which an asset is moderately overbought.  
-**Values:** Integer between 50 and RSI_OVERBOUGHT_THRESHOLD (typically 60-70)  
-**Impact:** Generates weaker sell signals compared to strong overbought conditions.  
-**Optimal Use:** Can be used for earlier exits with partial position closures.
+## 7. Configuration and Customization
 
-### RSI_NEUTRAL_LOW
-**Description:** Lower bound of the neutral RSI range.  
-**Values:** Integer between 30 and 50 (typically 40)  
-**Impact:** Affects confidence levels for signals in the neutral range.  
-**Optimal Use:** Can be adjusted to define the "neutral zone" where signals are treated with caution.
+### 7.1 Flexible Parameters
+- **Over 100 configurable parameters**: Nearly every aspect of the bot is customizable.
+- **.env support**: Secure storage of API keys and sensitive data.
+- **Runtime adjustments**: Many parameters can be changed during execution.
 
-### RSI_NEUTRAL_HIGH
-**Description:** Upper bound of the neutral RSI range.  
-**Values:** Integer between 50 and 70 (typically 60)  
-**Impact:** Affects confidence levels for signals in the neutral range.  
-**Optimal Use:** Can be adjusted to define the "neutral zone" where signals are treated with caution.
+### 7.2 Setup Utilities
+- **Exchange setup assistance**: Wizards for configuring different exchanges.
+- **API key management**: Secure storage and management of API credentials.
+- **Cross-platform support**: Works on Windows, Linux, and macOS.
+
+## 8. Backtesting Features
+
+### 8.1 Comprehensive Backtesting
+- **Historical data analysis**: Testing strategies on historical market data.
+- **Scenario analysis**: Testing under various market conditions (normal, bullish, bearish, high volatility).
+- **Flexible timeframes**: Customizable backtesting periods with configurable starting capital.
+
+### 8.2 Performance Metrics
+- **Detailed statistics**: Win rate, profit factor, Sharpe ratio, maximum drawdown.
+- **Trend-based performance**: Analysis of performance in different trend phases.
+- **Market phase performance**: Performance evaluation in various market phases.
+- **Periodic performance analysis**: Monthly and weekly performance breakdown.
+
+### 8.3 Trade Visualization
+- **Graphical trade representation**: Visual representation of entry and exit points.
+- **Pattern recognition**: Visual identification of successful trading patterns.
+- **Discord integration**: Charts and results can be shared directly via Discord.
+
+## 9. Specific Features
+
+### 9.1 TIME_EXIT Function
+- **Automatic time-based exit**: Closes positions after a certain time if no sufficient profit is achieved.
+- **Configurable holding time**: MAX_UNPROFITABLE_HOLD_HOURS determines the maximum holding duration for unprofitable positions.
+- **Profitability thresholds**: Separate thresholds for long and short positions (UNPROFITABLE_LONG_THRESHOLD, UNPROFITABLE_SHORT_THRESHOLD).
+- **Capital release**: Frees up locked capital for more promising trades.
+
+### 9.2 PROFIT_PROTECTION Mechanism
+- **Automatic profit protection**: Secures achieved profits in case of trend reversal.
+- **Peak tracking**: Tracks the highest and lowest values of a position.
+- **Activation threshold**: PROFIT_PROTECTION_MIN determines at which profit percentage protection activates.
+- **Protection factor**: PROFIT_PROTECTION_FACTOR determines the exit point based on retracement from the peak.
+
+### 9.3 Market Reversal Detection
+- **Trend reversal detection**: Identification of potential market turning points.
+- **Confirmation candles**: Waits for confirming candlestick formations.
+- **Divergence analysis**: Detects divergences between price and indicators as warning signals.
