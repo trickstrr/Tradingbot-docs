@@ -1,4 +1,4 @@
-# **📄 Dokumentation: Konfigurationsparameter für die Krypto-Trading-Bot-Strategie**  
+# ** Dokumentation: Konfigurationsparameter für die Krypto-Trading-Bot-Strategie**  
 
 ## **📌 Inhaltsverzeichnis**  
 1. [Allgemeine Einstellungen](#allgemeine-einstellungen)  
