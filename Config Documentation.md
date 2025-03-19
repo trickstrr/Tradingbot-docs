@@ -1,151 +1,143 @@
-# Documentation: Configuration Parameters for the Crypto Trading Bot Strategy
+### **Documentation: Configuration Parameters for the Crypto Trading Bot Strategy**  
 
-## Table of Contents
-1. [General Settings](#general-settings)
-2. [Signal Weights](#signal-weights)
-3. [Position Size Parameters](#position-size-parameters)
-4. [Signal Thresholds](#signal-thresholds)
-5. [RSI Parameters](#rsi-parameters)
-6. [Momentum Parameters](#momentum-parameters)
-7. [Volume Parameters](#volume-parameters)
-8. [Moving Average Parameters](#moving-average-parameters)
-9. [Indicator Weights](#indicator-weights)
-10. [Confidence Level Parameters](#confidence-level-parameters)
-11. [Volatility Parameters](#volatility-parameters)
-12. [Trend Parameters](#trend-parameters)
-13. [Cooling Period Parameters](#cooling-period-parameters)
-14. [Position Management Parameters](#position-management-parameters)
-15. [Trailing Stop Parameters](#trailing-stop-parameters)
-16. [Profit-Taking Parameters](#profit-taking-parameters)
-17. [Profit Protection Parameters](#profit-protection-parameters)
-18. [Divergence Parameters](#divergence-parameters)
-19. [Market Timing Parameters](#market-timing-parameters)
-20. [Time Filter Parameters](#time-filter-parameters)
-21. [Loss Limitation Parameters](#loss-limitation-parameters)
+## **Table of Contents**  
+1. [General Settings](#general-settings)  
+2. [Signal Weighting](#signal-weighting)  
+3. [Position Sizing Parameters](#position-sizing-parameters)  
+4. [Signal Thresholds](#signal-thresholds)  
+5. [Volatility Parameters](#volatility-parameters)  
+6. [Trend Parameters](#trend-parameters)  
+7. [Market Phases Parameters](#market-phases-parameters)  
+8. [Position Management Parameters](#position-management-parameters)  
+9. [Trailing Stop Parameters](#trailing-stop-parameters)  
+10. [Profit Protection Parameters](#profit-protection-parameters)  
+11. [Loss Limiting Parameters](#loss-limiting-parameters)  
 
 ---
 
-## General Settings
+## **6. Trend Parameters**  
 
-### UPDATE_INTERVAL
-**Description:** Time interval in seconds at which the strategy reanalyzes the market and generates trading signals.  
-**Values:** Specified in seconds (e.g., 3600 = 1 hour, 1800 = 30 minutes)  
-**Impact:** Smaller values allow faster reactions to market movements but consume more resources and may result in more noise. Higher values reduce noise and API calls but may miss critical trading opportunities.  
-**Optimal Use:** Should align with the selected timeframe. For a 1-hour chart, an interval of 30-60 minutes is recommended.
+### **TREND_SIGNAL_REDUCTION**  
+**Description:** Factor by which a trading signal is reduced when it moves against the current market trend.  
+**Values:** Decimal value between `0` and `1` (e.g., `0.2` means the signal is reduced by **80%**).  
+**Effect:** The lower this value, the stronger the reduction of signals against the trend.  
+**Recommended Values:**  
+- **Conservative strategy:** `0.1` (90% reduction)  
+- **Moderate strategy:** `0.2` (80% reduction)  
+- **Aggressive strategy:** `0.4` (60% reduction)  
 
-### LOOKBACK_WINDOW
-**Description:** Number of historical data points used for analysis.  
-**Values:** Integer (e.g., 300 candles)  
-**Impact:** Determines how far back the strategy looks to identify patterns and calculate indicators.  
-**Optimal Use:** Should be large enough to detect long-term trends but not so large that outdated data skews the analysis.
+### **TREND_CONFIDENCE_REDUCTION**  
+**Description:** Factor by which the confidence level is reduced when the signal moves against the trend.  
+**Values:** Decimal value between `0` and `1` (e.g., `0.5` means confidence is reduced by **50%**).  
+**Effect:** Reduces the likelihood of executing trades against the trend.  
+**Recommended Values:**  
+- **Safe strategy:** `0.3` (70% reduction)  
+- **Balanced strategy:** `0.5` (50% reduction)  
+- **Risky strategy:** `0.7` (30% reduction)  
 
-### PREDICTION_HORIZON
-**Description:** Number of future time units for which a forecast is made.  
-**Values:** Integer (e.g., 12 periods)  
-**Impact:** Influences how far into the future the strategy attempts to predict.  
-**Optimal Use:** Shorter horizons are generally more accurate, but longer ones can be helpful for strategic decisions.
+---
 
-## Signal Weights
+## **7. Market Phases Parameters**  
 
-### SIGNAL_WEIGHTS
-**Description:** Weights assigned to various signal sources contributing to the overall signal.  
-**Components:**
-- **hybrid_weight:** Weight of the hybrid signal combining various technical indicators.
-- **technical_weight:** Weight of pure technical analysis.
-- **finrl_weight:** Weight of the FinRL model (Reinforcement Learning).
-- **sentiment_weight:** Weight of sentiment analysis.
-- **lstm_weight:** Weight of the LSTM model for price forecasting.
-- **rl_weight:** Weight of the general Reinforcement Learning model.
+### **EXPANSION_TREND_STRENGTH**  
+**Description:** Minimum trend strength required to identify an expansion phase.  
+**Values:** Decimal value between `0` and `1` (e.g., `0.7` means at least **70% of indicators must show an uptrend**).  
+**Effect:** Higher values lead to fewer but more precise expansion phases.  
+**Recommended Values:**  
+- **Strict detection:** `0.8` (only very strong trends count as expansion)  
+- **Standard:** `0.7`  
+- **More flexible detection:** `0.6` (more expansion phases, but higher risk of false signals)  
 
-**Impact:** Determines how strongly each signal source influences the final trading signal.  
-**Optimal Use:** Higher weights should be assigned to more reliable signal sources. In volatile markets, the hybrid_weight should be increased.
+### **EXPANSION_RECENT_RANGE_RATIO**  
+**Description:** Minimum price range change relative to the 50-candle range required to confirm an expansion phase.  
+**Values:** Decimal value between `0` and `1` (e.g., `0.5` means the **price range must have changed by at least 50%**).  
+**Effect:** Higher values ensure more accurate expansion detection, while lower values allow for more frequent expansion trades.  
+**Recommended Values:**  
+- **Strict detection:** `0.6`  
+- **Standard:** `0.5`  
+- **More flexible detection:** `0.4`  
 
-## Position Size Parameters
+### **EXPANSION_VOLATILITY**  
+**Description:** Minimum volatility (%) required to recognize an expansion phase.  
+**Values:** Decimal value between `0` and `5` (e.g., `1.5` means the standard deviation of price movements must be **at least 1.5%**).  
+**Effect:** Higher values reduce false signals, lower values detect more expansion phases.  
+**Recommended Values:**  
+- **Strict detection:** `2.0`  
+- **Standard:** `1.5`  
+- **More flexible detection:** `1.2`  
 
-### MAX_POSITION_SIZE
-**Description:** Maximum proportion of available capital that can be used for a position.  
-**Values:** Decimal between 0 and 1 (e.g., 0.7 = 70% of capital)  
-**Impact:** Limits risk by capping position size.  
-**Optimal Use:** More conservative values (0.5-0.7) for risk-averse strategies, higher values for more aggressive strategies.
+---
 
-### BUY_POSITION_SIZE
-**Description:** Proportion of available capital to be used for buy positions.  
-**Values:** Decimal between 0 and 1  
-**Impact:** Determines how much capital is allocated for buy signals.  
-**Optimal Use:** Should be adjusted to market conditions - higher in bull markets, lower in uncertain markets.
+## **8. Position Management Parameters**  
 
-### SELL_POSITION_SIZE
-**Description:** Proportion of an existing position to be liquidated on sell signals.  
-**Values:** Decimal between 0 and 1 (1.0 = sell 100%)  
-**Impact:** Determines whether positions are fully or partially closed.  
-**Optimal Use:** Typically 1.0 to fully close positions, but can be reduced for partial profit-taking.
+### **MAX_UNPROFITABLE_HOLD_HOURS**  
+**Description:** Maximum number of hours an unprofitable position is held before being forcibly closed.  
+**Values:** Integer (e.g., `3` means an unprofitable position is held for **a maximum of 3 hours**).  
+**Recommended Values:**  
+- **Short-term trading:** `2-4 hours`  
+- **Medium-term trading:** `6-12 hours`  
+- **Long-term trading:** `24+ hours`  
 
-## Signal Thresholds
+---
 
-### BUY_THRESHOLD
-**Description:** Minimum signal value required to generate a buy signal.  
-**Values:** Decimal between 0 and 1 (higher values = more selective signals)  
-**Impact:** Determines how strong a signal must be to trigger a buy.  
-**Optimal Use:** Higher values (0.4-0.6) for more selective and higher-quality buy signals.
+## **9. Trailing Stop Parameters**  
 
-### STRONG_BUY_THRESHOLD
-**Description:** Signal value at which a strong buy signal is generated.  
-**Values:** Decimal between 0 and 1 (higher than BUY_THRESHOLD)  
-**Impact:** Can be used to adjust position size for particularly strong signals.  
-**Optimal Use:** Should be significantly higher than BUY_THRESHOLD (e.g., 0.7-0.85).
+### **TRAILING_STOP_ACTIVATION**  
+**Description:** Minimum profit (%) before a trailing stop is activated.  
+**Values:** Decimal value between `0` and `5` (e.g., `2.5` means a trailing stop is activated when the position is **at least 2.5% in profit**).  
+**Recommended Values:**  
+- **Safe strategy:** `1.5%`  
+- **Standard:** `2.5%`  
+- **Aggressive strategy:** `3.5%`  
 
-### SELL_THRESHOLD
-**Description:** Maximum signal value below which a sell signal is generated.  
-**Values:** Decimal between -1 and 0 (lower values = more selective signals)  
-**Impact:** Determines how strong a negative signal must be to trigger a sell.  
-**Optimal Use:** Lower values (-0.4 to -0.6) for more selective and higher-quality sell signals.
+### **TRAILING_STOP_DISTANCE**  
+**Description:** Distance of the trailing stop from the current price after activation.  
+**Values:** Decimal value between `0` and `5` (e.g., `1.0` means the trailing stop is set **1% below the highest price**).  
+**Recommended Values:**  
+- **Tight stop:** `0.5%`  
+- **Standard:** `1.0%`  
+- **Wider stop:** `1.5%`  
 
-### STRONG_SELL_THRESHOLD
-**Description:** Signal value below which a strong sell signal is generated.  
-**Values:** Decimal between -1 and 0 (lower than SELL_THRESHOLD)  
-**Impact:** Can be used to adjust position size for particularly strong sell signals.  
-**Optimal Use:** Should be significantly lower than SELL_THRESHOLD (e.g., -0.7 to -0.85).
+---
 
-### CONFIDENCE_THRESHOLD
-**Description:** Minimum confidence level required for a signal to trigger a trade.  
-**Values:** Decimal between 0 and 1  
-**Impact:** A higher value means only signals with high confidence result in trades.  
-**Optimal Use:** Higher values (0.4-0.65) for a more conservative strategy with fewer but higher-quality trades.
+## **10. Profit Protection Parameters**  
 
-## RSI Parameters
+### **PROFIT_PROTECTION_MIN**  
+**Description:** Minimum profit (%) before profit protection is activated.  
+**Values:** Decimal value between `0` and `5` (e.g., `1.2` means profit protection is activated at **1.2% profit**).  
+**Recommended Values:**  
+- **Safe strategy:** `1.0%`  
+- **Standard:** `1.2%`  
+- **Aggressive strategy:** `1.5%`  
 
-### RSI_OVERSOLD_THRESHOLD
-**Description:** RSI value below which an asset is considered strongly oversold.  
-**Values:** Integer between 0 and 30 (typically 20-30)  
-**Impact:** Lower values result in rarer but stronger buy signals.  
-**Optimal Use:** Lower values (18-20) are effective in bear markets, while higher values (25-30) work well in bull markets.
+### **PROFIT_PROTECTION_FACTOR**  
+**Description:** Factor that determines how much profit decline is tolerated before a position is closed.  
+**Values:** Decimal value between `0` and `1` (e.g., `0.8` means a position is closed if **20% of the maximum profit is lost**).  
+**Recommended Values:**  
+- **Conservative:** `0.9` (allows a 10% drawdown of max profit)  
+- **Standard:** `0.8` (allows a 20% drawdown of max profit)  
+- **Riskier:** `0.7` (allows a 30% drawdown of max profit)  
 
-### RSI_MODERATE_OVERSOLD
-**Description:** RSI value below which an asset is moderately oversold.  
-**Values:** Integer between RSI_OVERSOLD_THRESHOLD and 50 (typically 30-40)  
-**Impact:** Generates weaker buy signals compared to strong oversold conditions.  
-**Optimal Use:** Can be used for earlier entries with smaller position sizes.
+---
 
-### RSI_OVERBOUGHT_THRESHOLD
-**Description:** RSI value above which an asset is considered strongly overbought.  
-**Values:** Integer between 70 and 100 (typically 70-80)  
-**Impact:** Higher values result in rarer but stronger sell signals.  
-**Optimal Use:** Higher values (75-80) are effective in bull markets, while lower values (70-75) work well in bear markets.
+## **11. Loss Limiting Parameters**  
 
-### RSI_MODERATE_OVERBOUGHT
-**Description:** RSI value above which an asset is moderately overbought.  
-**Values:** Integer between 50 and RSI_OVERBOUGHT_THRESHOLD (typically 60-70)  
-**Impact:** Generates weaker sell signals compared to strong overbought conditions.  
-**Optimal Use:** Can be used for earlier exits with partial position closures.
+### **MAX_CONSECUTIVE_LOSSES**  
+**Description:** Maximum number of consecutive losing trades before trading is paused.  
+**Values:** Integer (e.g., `2` means the bot pauses trading after **2 consecutive losses**).  
+**Recommended Values:**  
+- **Safe strategy:** `1`  
+- **Standard:** `2`  
+- **Riskier:** `3`  
 
-### RSI_NEUTRAL_LOW
-**Description:** Lower bound of the neutral RSI range.  
-**Values:** Integer between 30 and 50 (typically 40)  
-**Impact:** Affects confidence levels for signals in the neutral range.  
-**Optimal Use:** Can be adjusted to define the "neutral zone" where signals are treated with caution.
+---
 
-### RSI_NEUTRAL_HIGH
-**Description:** Upper bound of the neutral RSI range.  
-**Values:** Integer between 50 and 70 (typically 60)  
-**Impact:** Affects confidence levels for signals in the neutral range.  
-**Optimal Use:** Can be adjusted to define the "neutral zone" where signals are treated with caution.
+### **Summary of the new parameters**  
+- **TREND_SIGNAL_REDUCTION** and **TREND_CONFIDENCE_REDUCTION** control how much signals are weakened when they go against the trend.  
+- **EXPANSION_TREND_STRENGTH**, **EXPANSION_RECENT_RANGE_RATIO**, and **EXPANSION_VOLATILITY** define how expansion phases are detected.  
+- **MAX_UNPROFITABLE_HOLD_HOURS** prevents holding unprofitable positions for too long.  
+- **TRAILING_STOP_ACTIVATION** and **TRAILING_STOP_DISTANCE** help manage trailing stop behavior.  
+- **PROFIT_PROTECTION_MIN** and **PROFIT_PROTECTION_FACTOR** ensure profitable trades are secured.  
+- **MAX_CONSECUTIVE_LOSSES** prevents excessive losses by pausing trading after repeated losses.  
+
+These parameters allow for better control over trend and market phase analysis, improved adaptability to market conditions, and reduce the need for manual code changes by making everything configurable in `config.json`.
